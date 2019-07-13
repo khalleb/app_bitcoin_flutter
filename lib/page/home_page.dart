@@ -30,7 +30,7 @@ class _HomeState extends State<Home> {
   Future _recuperarDados() async{
     SharedPreferences sp = await SharedPreferences.getInstance();
     setState(() {
-     _preco = (sp.getString('preco') ?? "00,00");
+     _preco = (sp.getString('preco') ?? "00.00");
      _dataAtualizacao = (sp.getString('data') ?? "00/00/000 ás 00/00");
     });
   }
@@ -46,12 +46,15 @@ class _HomeState extends State<Home> {
     http.Response response = await http.get(url);
     Map<String, dynamic> retorno = json.decode(response.body);
     setState(() {
-      String valor = retorno["BRL"]["buy"] .toString();
-      var controller = new MoneyMaskedTextController(leftSymbol: 'R\$ ');
-      controller.updateValue(double.parse(valor));
-      _preco =  controller.text;
+      _preco = retorno["BRL"]["buy"] .toString();
      _salvar();
     });
+  }
+
+  String _tratarValor(String valor){
+    var maskMoney = new MoneyMaskedTextController();
+    maskMoney.updateValue(double.parse(valor));
+    return maskMoney.text;
   }
 
   @override
@@ -80,7 +83,7 @@ Widget buildBody(String preco){
           Image.asset("assets/images/bitcoin-logo.png"),
           Padding(
             padding: EdgeInsets.only(top: 30, bottom: 30),
-            child: Text(preco,
+            child: Text("R\$ " + _tratarValor(preco),
             style: TextStyle(fontSize: 35.0),
             ),
           ),
